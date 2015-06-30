@@ -1,0 +1,25 @@
+{
+  "name": "atom-php-navigation",
+  "main": "./lib/atom-php-navigation",
+  "version": "0.0.0",
+  "description": "A short description of your package",
+  "keywords": [
+  ],
+  "activationCommands": {
+    "atom-workspace": "atom-php-navigation:toggle"
+  },
+  "repository": "https://github.com/atom/atom-php-navigation",
+  "license": "MIT",
+  "engines": {
+    "atom": ">=1.0.0 <2.0.0"
+  },
+  "dependencies": {
+    "fs-plus": "^2.0.4",
+    "season": "^1.0.2",
+    "emissary": "^1.0.0",
+    "lodash": "^2.4.1",
+    "minimatch": "^0.2.14",
+    "color": "^0.5.0",
+    "xml2js": "^0.4.1"
+  }
+}
