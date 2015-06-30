@@ -3,7 +3,7 @@ AtomPhpNavigationView = require './atom-php-navigation-view'
 fs = require 'fs'
 scandir = require('scandir').create()
 _markers = {};
-# _tree = {};
+_tree = {};
 
 
 module.exports = AtomPhpNavigation =
@@ -11,8 +11,7 @@ module.exports = AtomPhpNavigation =
   modalPanel: null
   subscriptions: null
   enabled: false
-  # indexingRunned: false
-
+  indexingRunned: false
 
   getTree: ->
     return _tree;
@@ -43,6 +42,8 @@ module.exports = AtomPhpNavigation =
     atomPhpNavigationViewState: @atomPhpNavigationView.serialize()
 
   toggle: ->
+    @indexing()
+
     if @enabled
       @disable()
     else
@@ -69,7 +70,7 @@ module.exports = AtomPhpNavigation =
       className = namespace[namespace.length - 1]
       exp = new RegExp "^(abstract class|interface|class) (" + className + ")[^\\w\\d]+"
       row = res.computedRange.start.row
-      start = res.match[0].indexOf res.match[4]
+      start = ( res.match[0].indexOf ' ' + res.match[4] ) + 1
       end = start + res.match[4].length
       end = if end > res.computedRange.end.column then res.computedRange.end.column else end
       marker = editor.markBufferRange([[row, start], [row, end]])
@@ -83,57 +84,62 @@ module.exports = AtomPhpNavigation =
       editor.onDidChangeCursorPosition (event) ->
         newCol = event.newBufferPosition.column
         newRow =  event.newBufferPosition.row
+
         if newRow == row and newCol >= start and newCol <= end
-          console.log exp
-          atom.workspace.scan exp, (res) ->
-            console.log res
-            if res.filePath
-              atom.open {pathsToOpen: res.filePath}
+          if typeof _tree[className] == 'object'
+            atom.open {pathsToOpen: _tree[className].path}
+          else
+            atom.workspace.scan exp, (res) ->
+              if res.filePath
+                atom.open {pathsToOpen: res.filePath}
+                _tree[className] =
+                  path: res.filePath
+                  className: className
+                  namespace: namespace.slice(1, namespace.length).join '\\'
+
+  indexing: ->
+    if !@indexingRunned
+      @indexingRunned = true
+      @modalPanel.show()
+    else
+      return false
+
+    console.log 'Indexing!'
+
+    path = atom.project.getPaths()[0]
+    scandir.on 'file', (filePath, stats) ->
+      fs.readFile filePath, encoding: 'utf-8', (err, data) ->
+        namespace = data.match /namespace (.*?);/i
+        className = data.match /\n+(interface|abstract class|class) (.*?)( |\n)/
+        className = if className then className[2] else null
+        fileName = filePath.split('/')
+        fileName = fileName[fileName.length - 1]
+
+        _tree[if className then className else fileName] =
+          namespace: if namespace then namespace[1] else ''
+          className: className
+          path: filePath
+
+      return
+
+    scandir.on 'error', (err) ->
+      console.error err
+      return
+
+    self = @
+    scandir.on 'end', ->
+      self.indexingComplete()
+      return
+
+    scandir.scan
+      dir: path
+      recursive: true
+      filter: /\.php/
 
 
-  # indexing: ->
-  #   if !@indexingRunned
-  #     @indexingRunned = true
-  #     @modalPanel.show()
-  #   else
-  #     return false
-  #
-  #   console.log 'Indexing!'
-  #
-  #   path = atom.project.getPaths()[0]
-  #   scandir.on 'file', (filePath, stats) ->
-  #     fs.readFile filePath, encoding: 'utf-8', (err, data) ->
-  #       namespace = data.match /namespace (.*?);/i
-  #       className = data.match /\n+(interface|abstract class|class) (.*?)( |\n)/
-  #       className = if className then className[2] else null
-  #       fileName = filePath.split('/')
-  #       fileName = fileName[fileName.length - 1]
-  #
-  #       _tree[if className then className else fileName] =
-  #         namespace: if namespace then namespace[1] else ''
-  #         className: className
-  #         path: filePath
-  #
-  #     return
-  #
-  #   scandir.on 'error', (err) ->
-  #     console.error err
-  #     return
-  #
-  #   self = @
-  #   scandir.on 'end', ->
-  #     self.indexingComplete()
-  #     return
-  #
-  #   scandir.scan
-  #     dir: path
-  #     recursive: true
-  #     filter: /\.php/
-  #
-  #
-  # indexingComplete: ->
-  #   @indexingRunned = false
-  #   if @modalPanel.isVisible()
-  #     @modalPanel.hide()
-  #
-  #   @printTree()
+  indexingComplete: ->
+    @indexingRunned = false
+    if @modalPanel.isVisible()
+      @modalPanel.hide()
+
+    @printTree()
