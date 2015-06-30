@@ -1,4 +1,4 @@
 # atom-php-navigation
-[![Github Releases](https://img.shields.io/github/downloads/igogo/atom-php-navigation/latest/total.svg)]()
+[![apm](https://img.shields.io/apm/atom-php-navigation/vim-mode.svg)]()
 
 Navigation by project classes in atom editor
