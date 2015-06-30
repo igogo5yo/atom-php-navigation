@@ -1,10 +1,9 @@
 {
   "name": "atom-php-navigation",
   "main": "./lib/atom-php-navigation",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Navigation by project classes in atom editor",
-  "keywords": [
-  ],
+  "keywords": [],
   "activationCommands": {
     "atom-workspace": "atom-php-navigation:toggle"
   },
@@ -13,6 +12,5 @@
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
