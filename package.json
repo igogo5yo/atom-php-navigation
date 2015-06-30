@@ -2,7 +2,7 @@
   "name": "atom-php-navigation",
   "main": "./lib/atom-php-navigation",
   "version": "0.3.0",
-  "description": "Navigation by project classes in atom editor",
+  "description": "Navigation by project classes in atom editor.\nTo activate press cmd-alt-n",
   "keywords": [],
   "activationCommands": {
     "atom-workspace": "atom-php-navigation:toggle"
