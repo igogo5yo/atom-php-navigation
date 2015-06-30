@@ -2,13 +2,13 @@
   "name": "atom-php-navigation",
   "main": "./lib/atom-php-navigation",
   "version": "0.1.0",
-  "description": "A short description of your package",
+  "description": "Navigation by project classes in atom editor",
   "keywords": [
   ],
   "activationCommands": {
     "atom-workspace": "atom-php-navigation:toggle"
   },
-  "repository": "https://github.com/atom/atom-php-navigation",
+  "repository": "https://github.com/igogo5yo/atom-php-navigation",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"

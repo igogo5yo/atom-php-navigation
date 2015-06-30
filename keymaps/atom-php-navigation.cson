@@ -9,7 +9,3 @@
 # https://atom.io/docs/latest/behind-atom-keymaps-in-depth
 'atom-workspace':
   'cmd-alt-n': 'atom-php-navigation:toggle'
-  'ctrl-alt-m': 'atom-php-navigation:toggle-violation-metadata'
-'atom-editor':
-  'ctrl-alt-[': 'atom-php-navigation:move-to-previous-violation'
-  'ctrl-alt-]': 'atom-php-navigation:move-to-next-violation'
