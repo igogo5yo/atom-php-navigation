@@ -1,3 +1,2 @@
 ## 0.1.0 - First Release
-* Every feature added
-* Every bug fixed
+* Navigate to 1 parent class or interface
