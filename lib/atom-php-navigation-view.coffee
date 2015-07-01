@@ -7,7 +7,7 @@ class AtomPhpNavigationView
 
     # Create message element
     message = document.createElement('div')
-    message.textContent = "Indexing starts! Please wait!"
+    message.textContent = "Indexation: please wait!"
     message.classList.add('message')
 
     loading = document.createElement('span')
