@@ -5,6 +5,7 @@
 
 
 Navigation by project classes in atom editor
+
 **to activate press:**
 ```
 cmd-alt-n
