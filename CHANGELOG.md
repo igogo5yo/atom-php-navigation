@@ -9,3 +9,8 @@
 ## 0.3.1 [alpha]
 * Add bages
 * Change description
+
+## 0.4.0 [alpha]
+* Add navigation by uses, extends, multi-interfaces and traits
+* Bug fixes
+* Change description
