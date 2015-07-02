@@ -14,3 +14,6 @@
 * Add navigation by uses, extends, multi-interfaces and traits
 * Bug fixes
 * Change description
+
+## 0.4.1 [alpha]
+* Add keywords

@@ -16,6 +16,7 @@ module.exports = AtomPhpNavigation =
   useRegExp: /use\s([\w\d_\\]+);/g
   classRegExp: /\n+(interface|abstract class|class) (.*?)( |\n)/
   namespaceRegExp: /namespace (.*?);/
+  classCallRegExp: /([\s\t]+|=)(new ([\w\d\\_]+)|([\w\d\\_]+)::)/g
 
   getTree: ->
     return _tree;
