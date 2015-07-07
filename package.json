@@ -13,13 +13,20 @@
   "activationCommands": {
     "atom-workspace": "atom-php-navigation:toggle"
   },
-  "repository": "https://github.com/igogo5yo/atom-php-navigation",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/igogo5yo/atom-php-navigation.git"
+  },
+  "bugs": {
+    "url": "https://github.com/igogo5yo/atom-php-navigation/issues"
+  },
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
   },
   "dependencies": {
     "scandir": "~0.1.2",
-    "trim": "~0.0.1"
+    "trim": "~0.0.1",
+    "jquery": "*"
   }
 }

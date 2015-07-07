@@ -3,7 +3,6 @@
 [![apm](https://img.shields.io/apm/dm/atom-php-navigation.svg)]()
 [![apm](https://img.shields.io/apm/l/atom-php-navigation.svg)]()
 
-
 Navigation by project classes in atom editor
 
 **to activate press:**
