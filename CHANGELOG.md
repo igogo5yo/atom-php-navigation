@@ -17,3 +17,7 @@
 
 ## 0.4.1 [alpha]
 * Add keywords
+
+## 0.5.0 [alpha]
+* Add better support for called classes and namespaces
+* Changed click trigger to alt + click 

@@ -2,7 +2,7 @@
   "name": "atom-php-navigation",
   "main": "./lib/atom-php-navigation",
   "version": "0.4.1",
-  "description": "Navigation by project classes in atom editor.\nTo activate press cmd-alt-n",
+  "description": "Navigation by project classes in atom editor.\nTo activate press cmd-alt-n.\nTo navigate press alt + click",
   "keywords": [
     "php",
     "navigation",
@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "scandir": "~0.1.2",
-    "trim": "~0.0.1",
+    "trim": "*",
     "jquery": "*"
   }
 }

@@ -6,7 +6,7 @@ trim = require 'trim'
 scandir = require('scandir').create()
 _markers = {};
 _tree = {};
-_ready2click = false;
+_ready2click = true;#false;
 _disposebls = [];
 
 module.exports = AtomPhpNavigation =
@@ -15,11 +15,11 @@ module.exports = AtomPhpNavigation =
   subscriptions: null
   enabled: false
   indexingRunned: false
-  extendsRegExp: /^(class|interface|trait|abstract class)\s([\S]+?)\s(\s?extends ([\w\d\_\\]+))?(\s?implements ([\w\d\_\\,\s]+))?/g
-  useRegExp: /use\s([\w\d_\\]+);/g
-  classRegExp: /\n+(interface|abstract class|class) (.*?)( |\n)/
+  extendsRegExp: /^[\t\n\s]?(class|interface|trait|abstract class)\s([\S]+?)\s(\s?extends ([\w\d\_\\]+))?(\s?implements ([\w\d\_\\,\n\s]+))?/g
+  useRegExp: /use\s([\w\d_\\]+)[\s\w\d]?;/g
+  classRegExp: /^[\t\n\s]?(interface|abstract class|class) ([\d\w_\\]+)(|\n)/
   namespaceRegExp: /namespace (.*?);/
-  classCallRegExp: /([\s\t\(]+|=)(new ([\w\d\\_]+)|([\w\d\\_]+)::)/g
+  classCallRegExp: /([\s\t\(\r\n]+|=)(new ([\w\d\\_]+)|([\w\d\\_]+)(::|\s+\$))/g
 
   getTree: ->
     return _tree;
@@ -37,14 +37,6 @@ module.exports = AtomPhpNavigation =
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 'atom-php-navigation:toggle': => @toggle()
 
-    body = document.getElementsByTagName('body')[0];
-
-    body.addEventListener 'keydown', (e) ->
-      _ready2click = e.altKey
-
-    body.addEventListener 'keyup', (e) ->
-      _ready2click = e.altKey
-
   deactivate: ->
     @modalPanel.destroy()
     @subscriptions.dispose()
@@ -61,11 +53,18 @@ module.exports = AtomPhpNavigation =
     else
       @enable()
 
+  toggleKey: (e) ->
+    _ready2click = e.altKey != e.metaKey
+
   enable: ->
     @enabled = true
     console.log 'On'
 
     @editorViewSubscription = atom.workspace.observeTextEditors (editor) =>
+      editorView = atom.views.getView(editor)
+      editorView.addEventListener 'keydown', @toggleKey
+      editorView.addEventListener 'keyup', @toggleKey
+
       @scanExtends(editor)
       @scanUses(editor)
       @scanCallClasses(editor)
@@ -76,6 +75,10 @@ module.exports = AtomPhpNavigation =
 
     @_stopIndexation()
     @editorViewSubscription = atom.workspace.observeTextEditors (editor) =>
+      editorView = atom.views.getView(editor)
+      editorView.removeEventListener 'keydown', @toggleKey
+      editorView.removeEventListener 'keyup', @toggleKey
+
       editor.getMarkers().map (marker) ->
         if marker.getProperties().className != undefined
           marker.destroy()
@@ -87,18 +90,19 @@ module.exports = AtomPhpNavigation =
     match = trim match
     namespace = match.split "\\"
     className = namespace[namespace.length - 1]
-    row = res.computedRange.start.row
+    row = res.computedRange.end.row
     if typeof startCb != 'function'
       startCb = () ->
         return res.match[0].indexOf(' ' + match)
 
-    start = if fromStart then res.computedRange.start.column else startCb() + 1
+    start_c = if res.computedRange.start.row < res.computedRange.end.row then 0 else res.computedRange.start.column
+    start = if fromStart then start_c else startCb() + 1
     end = start + match.length
     range = new Range([row, start], [row, end])
     marker = editor.markBufferRange(range)
     markerProperties =
       className: className
-      namespace: namespace.slice(1, namespace.length).join '\\'
+      namespace: if namespace[0] == '\\' then namespace.slice(1, namespace.length).join '\\' else namespace.join '\\'
 
     marker.setProperties markerProperties
 
@@ -214,20 +218,28 @@ module.exports = AtomPhpNavigation =
     path = atom.project.getPaths()[0]
     scandir.on 'file', (filePath, stats) ->
       fs.readFile filePath, encoding: 'utf-8', (err, data) ->
-        namespace = data.match self.namespaceRegExp
-        className = data.match self.classRegExp
-        className = if className then className[2] else null
-        fileName = filePath.split('/')
-        fileName = fileName[fileName.length - 1]
+        dataArr = data.split /\n/g
+        dataArr.forEach((line, n) ->
+          namespace = line.match self.namespaceRegExp
+          className = line.match self.classRegExp
 
-        key = if className then className else fileName
-        if _tree[key] == undefined
-          _tree[key] = []
+          if !className
+            return false
 
-        _tree[key].push
-          namespace: if namespace then namespace[1] else ''
-          className: className
-          path: filePath
+          className = if className then className[2] else null
+          fileName = filePath.split('/')
+          fileName = fileName[fileName.length - 1]
+
+          key = if className then className else fileName
+          if _tree[key] == undefined
+            _tree[key] = []
+
+          _tree[key].push
+            line: n + 1,
+            namespace: if namespace then namespace[1] else ''
+            className: className
+            path: filePath
+        )
 
       return
 
@@ -253,3 +265,4 @@ module.exports = AtomPhpNavigation =
 
   indexingComplete: ->
     @_stopIndexation()
+    @printTree()
