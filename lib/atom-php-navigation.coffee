@@ -4,10 +4,9 @@ $ = require 'jquery'
 fs = require 'fs'
 trim = require 'trim'
 scandir = require('scandir').create()
-_markers = {};
 _tree = {};
 _ready2click = true;#false;
-_disposebls = [];
+_markers = []
 
 module.exports = AtomPhpNavigation =
   atomPhpNavigationView: null
@@ -64,6 +63,10 @@ module.exports = AtomPhpNavigation =
       editorView = atom.views.getView(editor)
       editorView.addEventListener 'keydown', @toggleKey
       editorView.addEventListener 'keyup', @toggleKey
+      editorView.addEventListener 'mousedown', @click
+
+      if _markers[editor.id] == undefined
+        _markers[editor.id] = []
 
       @scanExtends(editor)
       @scanUses(editor)
@@ -78,19 +81,22 @@ module.exports = AtomPhpNavigation =
       editorView = atom.views.getView(editor)
       editorView.removeEventListener 'keydown', @toggleKey
       editorView.removeEventListener 'keyup', @toggleKey
+      editorView.removeEventListener 'mousedown', @click
 
       editor.getMarkers().map (marker) ->
         if marker.getProperties().className != undefined
           marker.destroy()
 
-    _disposebls.map (dip) ->
-      dip.dispose()
-
   createMarker: (editor, res, match, fromStart = false, startCb = null) ->
     match = trim match
     namespace = match.split "\\"
     className = namespace[namespace.length - 1]
+
+    if !res.computedRange
+      return false
+
     row = res.computedRange.end.row
+
     if typeof startCb != 'function'
       startCb = () ->
         return res.match[0].indexOf(' ' + match)
@@ -102,6 +108,7 @@ module.exports = AtomPhpNavigation =
     marker = editor.markBufferRange(range)
     markerProperties =
       className: className
+      filePath: res.filePath
       namespace: if namespace[0] == '\\' then namespace.slice(1, namespace.length).join '\\' else namespace.join '\\'
 
     marker.setProperties markerProperties
@@ -120,22 +127,43 @@ module.exports = AtomPhpNavigation =
       if res.match.length < 4
         return false
 
-      markers = []
       if res.match[3] != undefined
-        markers.push(self.createMarker(editor, res, res.match[3], true))
+        _markers[editor.id].push(self.createMarker(editor, res, res.match[3], true))
 
       if res.match[4] != undefined
-        markers.push(self.createMarker(editor, res, res.match[4], true))
+        _markers[editor.id].push(self.createMarker(editor, res, res.match[4], true))
 
-      _disposebls.push(
-        editor.onDidChangeCursorPosition (event) ->
-          markers.map((marker) ->
-            if marker.getBufferRange().containsPoint(event.newBufferPosition)
-              props = marker.getProperties()
-              className = props.className
-              self.openClassFile className, res.filePath, props.namespace
-          )
-      )
+  click: (event) ->
+    if _ready2click == false
+      return false
+
+    editor = atom.workspace.getActiveTextEditor()
+    currentPosition = editor.getCursorBufferPosition()
+
+    # console.log editor.id
+    # console.log currentPosition, _markers[editor.id].map((marker) ->
+    #   marker.getBufferRange()
+    # )
+
+    $.each(_markers[editor.id], (i, marker) ->
+      if marker.getBufferRange().containsPoint(currentPosition)
+        props = marker.getProperties()
+        className = props.className
+
+        if _tree[className] != undefined and typeof _tree[className][0] == 'object'
+          atom.open {pathsToOpen: _tree[className][0].path}
+        else
+          exp = new RegExp "^(class|interface|trait|abstract class) (" + className + ")[^\\w\\d]+"
+          atom.workspace.scan exp, (res) ->
+            if res.filePath
+              atom.open {pathsToOpen: res.filePath}
+              _tree[className] =
+                path: props.filePath
+                className: className
+                namespace: props.namespace
+
+        return false
+    )
 
   scanUses: (editor) ->
     self = @
@@ -144,14 +172,7 @@ module.exports = AtomPhpNavigation =
       if res.match.length < 2
         return false
 
-      marker = self.createMarker(editor, res, res.match[1])
-      _disposebls.push(
-        editor.onDidChangeCursorPosition (event) ->
-          if marker.getBufferRange().containsPoint(event.newBufferPosition)
-            props = marker.getProperties()
-            className = props.className
-            self.openClassFile className, res.filePath, props.namespace
-      )
+      _markers[editor.id].push(self.createMarker(editor, res, res.match[1]))
 
   scanExtends: (editor) ->
     self = @
@@ -160,14 +181,13 @@ module.exports = AtomPhpNavigation =
       if res.match.length < 5
         return false
 
-      markers = []
       if res.match[4] != undefined
         match = trim res.match[4]
         add = trim(res.match[3].split(' ')[0]) + ' ';
         startCb = () ->
           return res.match[0].indexOf(add + match) + add.length
 
-        markers.push(self.createMarker(editor, res, match, false, startCb))
+        _markers[editor.id].push(self.createMarker(editor, res, match, false, startCb))
 
       if res.match[6] != undefined
         res.match[6].split(',').map((str) ->
@@ -177,34 +197,8 @@ module.exports = AtomPhpNavigation =
             _s = res.match[5].indexOf ' ' + str
             return res.match[0].indexOf(res.match[5]) + _s
 
-          markers.push(self.createMarker(editor, res, str, false, startCb))
+          _markers[editor.id].push(self.createMarker(editor, res, str, false, startCb))
         )
-
-      _disposebls.push(
-        editor.onDidChangeCursorPosition (event) ->
-          markers.map((marker) ->
-            if marker.getBufferRange().containsPoint(event.newBufferPosition)
-              props = marker.getProperties()
-              className = props.className
-              self.openClassFile className, res.filePath, props.namespace
-          )
-      )
-
-  openClassFile: (className, path, namespace) ->
-    if _ready2click == false
-      return false
-
-    if _tree[className] != undefined and typeof _tree[className][0] == 'object'
-      atom.open {pathsToOpen: _tree[className][0].path}
-    else
-      exp = new RegExp "^(class|interface|trait|abstract class) (" + className + ")[^\\w\\d]+"
-      atom.workspace.scan exp, (res) ->
-        if res.filePath
-          atom.open {pathsToOpen: res.filePath}
-          _tree[className] =
-            path: path
-            className: className
-            namespace: namespace
 
   indexing: ->
     if !@indexingRunned

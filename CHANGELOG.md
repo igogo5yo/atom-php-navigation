@@ -20,4 +20,7 @@
 
 ## 0.5.0 [alpha]
 * Add better support for called classes and namespaces
-* Changed click trigger to alt + click 
+* Changed click trigger to alt + click
+
+## 0.5.1 [alpha]
+* Refactoring and bug fixes
