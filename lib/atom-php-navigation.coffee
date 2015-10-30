@@ -88,12 +88,16 @@ module.exports = AtomPhpNavigation =
           marker.destroy()
 
   createMarker: (editor, res, match, fromStart = false, startCb = null) ->
-    match = trim match
-    namespace = match.split "\\"
-    className = namespace[namespace.length - 1]
-
     if !res.computedRange
       return false
+
+    match = trim match
+    namespace = match.split "\\"
+
+    if namespace == undefined
+      return false
+
+    className = namespace[namespace.length - 1]
 
     row = res.computedRange.end.row
 
@@ -146,7 +150,8 @@ module.exports = AtomPhpNavigation =
     # )
 
     $.each(_markers[editor.id], (i, marker) ->
-      if marker.getBufferRange().containsPoint(currentPosition)
+      console.log(i, marker)
+      if marker && marker.getBufferRange().containsPoint(currentPosition)
         props = marker.getProperties()
         className = props.className
 
