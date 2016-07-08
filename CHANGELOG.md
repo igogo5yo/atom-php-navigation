@@ -24,3 +24,6 @@
 
 ## 0.5.1 [alpha]
 * Refactoring and bug fixes
+
+## 0.5.3 [alpha]
+* Fixed bug with .hg
