@@ -255,7 +255,7 @@ module.exports = AtomPhpNavigation =
     scandir.scan
       dir: path
       recursive: true
-      filter: /\.php/
+      filter: /^(.(?!\.hg).)*(\.php)$/
 
   _stopIndexation: () ->
     @indexingRunned = false
