@@ -1,5 +1,5 @@
 # atom-php-navigation
-[![apm](https://img.shields.io/apm/dm/vim-mode.svg)](https://github.com/igogo5yo/atom-php-navigation)
+[![apm](https://img.shields.io/apm/dm/vim-mode.svg?style=flat-square)](https://github.com/igogo5yo/atom-php-navigation) [![apm](https://img.shields.io/apm/v/vim-mode.svg?style=flat-square)](https://github.com/igogo5yo/atom-php-navigation) [![apm](https://img.shields.io/apm/l/vim-mode.svg?style=flat-square)](https://github.com/igogo5yo/atom-php-navigation)
 
 Navigation by project classes in atom editor
 
