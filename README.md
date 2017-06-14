@@ -1,4 +1,4 @@
-# The package havn't already supported 
+# The package is no longer supported
 
 ## atom-php-navigation
 [![apm](https://img.shields.io/apm/dm/vim-mode.svg?style=flat-square)](https://github.com/igogo5yo/atom-php-navigation) [![apm](https://img.shields.io/apm/v/vim-mode.svg?style=flat-square)](https://github.com/igogo5yo/atom-php-navigation) [![apm](https://img.shields.io/apm/l/vim-mode.svg?style=flat-square)](https://github.com/igogo5yo/atom-php-navigation)
